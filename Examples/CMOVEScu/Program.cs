@@ -52,8 +52,7 @@ namespace CMOVEScu
 				DicomTransferSyntax.ImplicitVRLittleEndian
 			};
 
-        public CStoreSCP(Stream stream, Logger log)
-            : base(stream, log)
+        public CStoreSCP(INetworkStream stream, Encoding fallbackEncoding, Logger log):base(stream,fallbackEncoding,log)
         {
         }
 
@@ -105,6 +104,11 @@ namespace CMOVEScu
         {
             return new DicomCEchoResponse(request, DicomStatus.Success);
         }
+
+        public void OnConnectionClosed(Exception exception)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class Program
@@ -132,7 +136,7 @@ namespace CMOVEScu
 
                 };
 
-            var cstoreServer = new DicomServer<CStoreSCP>(22345);
+            var cstoreServer = DicomServer.Create<CStoreSCP>(22345);
 
             //发起C-MOVE-RQ操作,发送请求的StudyID是12
             DicomCMoveRequest req=new DicomCMoveRequest("DEST-AE", "1.2.392.200036.9116.2.6.1.48.1214245773.1419755057.457640");

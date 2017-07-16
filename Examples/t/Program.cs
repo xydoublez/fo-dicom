@@ -16,7 +16,7 @@ namespace CGetScu
         static void Main(string[] args)
         {
             var client = new DicomClient();
-            //client.Options = new DicomServiceOptions { IgnoreAsyncOps = true };
+            client.Options = new DicomServiceOptions { IgnoreAsyncOps = true };
 
             //var pc = DicomPresentationContext.GetScpRolePresentationContext(DicomUID.CTImageStorage);
             //client.AdditionalPresentationContexts.Add(pc);

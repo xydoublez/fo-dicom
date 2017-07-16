@@ -6,6 +6,9 @@ using Dicom;
 using Dicom.Network;
 using System.IO;
 using System.Data;
+using Dicom.Log;
+using System.Text;
+
 namespace ZyWorkListScp
 {
 
@@ -93,8 +96,6 @@ namespace ZyWorkListScp
             try
             {
                 DicomServer<MyDicomServiceProvider> server = new DicomServer<MyDicomServiceProvider>(Program.LOCALE_PORT);
-                server.Logger = logger;
-                server.Options = new DicomServiceOptions();
                 server.Options.LogDataPDUs = true;
                 server.Options.LogDimseDatasets = true;
                 server.Options.MaxDataBuffer = Program.MAX_PDU_LENGTH;
@@ -131,7 +132,7 @@ namespace ZyWorkListScp
         /// <summary>
         ///  constructor, called by DicomServer when a new connection is created
         /// </summary>
-        public MyDicomServiceProvider(Stream stream, Dicom.Log.Logger log) : base(stream, log)
+        public MyDicomServiceProvider(INetworkStream stream, Encoding fallbackEncoding, Logger log) : base(stream, fallbackEncoding, log)
         {
         }
 
@@ -570,6 +571,11 @@ namespace ZyWorkListScp
             }
             
             return resp;
+        }
+
+        public void OnConnectionClosed(Exception exception)
+        {
+            throw new NotImplementedException();
         }
     }
 }

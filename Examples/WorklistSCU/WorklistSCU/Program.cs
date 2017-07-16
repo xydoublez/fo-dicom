@@ -60,7 +60,7 @@ namespace WorklistSCU
 
             // now we create the Worklist C-FIND request
             DicomCFindRequest req = new DicomCFindRequest(DicomQueryRetrieveLevel.Worklist, DicomPriority.Medium);
-            req.SOPClassUID = DicomUID.ModalityWorklistInformationModelFIND;
+            //req.SOPClassUID = DicomUID.ModalityWorklistInformationModelFIND;
             
             // set an event handler for our request
             // this handler will get the response (answer received from SCP)

@@ -3,6 +3,7 @@ using System.IO;
 using Dicom;
 using Dicom.Network;
 using Dicom.Log;
+using System.Text;
 
 namespace ZYStoreScp
 {
@@ -116,7 +117,8 @@ namespace ZYStoreScp
 				DicomTransferSyntax.ImplicitVRLittleEndian
 			};
 
-			public CStoreSCP(Stream stream, Logger log) : base(stream, log) {
+			public CStoreSCP(INetworkStream stream, Encoding fallbackEncoding, Logger log) : base(stream, fallbackEncoding, log) 
+            {
 			}
 
 			public void OnReceiveAssociationRequest(DicomAssociation association) {
@@ -168,7 +170,7 @@ namespace ZYStoreScp
                 ht.Add("PATIENT_NAME", dataSet.Get<string>(DicomTag.PatientName));
                 ht.Add("PATIENT_SEX", dataSet.Get<string>(DicomTag.PatientSex));
                 ht.Add("PATIENT_BRITHDATE", dataSet.Get<string>(DicomTag.PatientBirthDate));
-                ht.Add("OTHER_PATIENT_ID", dataSet.Get<string>(DicomTag.OtherPatientIDs));
+                //ht.Add("OTHER_PATIENT_ID", dataSet.Get<string>(DicomTag.OtherPatientIDs));
                 ht.Add("OPERATORS_NAME", dataSet.Get<string>(DicomTag.OperatorsName));
                 ht.Add("STUDY_DATE", dataSet.Get<string>(DicomTag.StudyDate));
                 ht.Add("PROTOCOL_NAME", dataSet.Get<string>(DicomTag.ProtocolName));
@@ -182,7 +184,7 @@ namespace ZYStoreScp
                 ht.Add("PAITENT_AGE", dataSet.Get<string>(DicomTag.PatientAge));
                 ht.Add("SERIES_NUMBER", dataSet.Get<string>(DicomTag.SeriesNumber));
                 ht.Add("REFERRING_PHYSICIAN_NAME", dataSet.Get<string>(DicomTag.ReferringPhysicianName));
-                ht.Add("OTHER_PATIENT_NAME", dataSet.Get<string>(DicomTag.OtherPatientIDs));
+                //ht.Add("OTHER_PATIENT_NAME", dataSet.Get<string>(DicomTag.OtherPatientIDs));
                 ht.Add("PATIENT_COMMENTS", dataSet.Get<string>(DicomTag.PatientComments));
                 ht.Add("BODY_PART_EXAMINED", dataSet.Get<string>(DicomTag.BodyPartExamined));
                 ht.Add("STUDY_TIME", dataSet.Get<string>(DicomTag.StudyTime));
@@ -216,6 +218,11 @@ namespace ZYStoreScp
 			public DicomCEchoResponse OnCEchoRequest(DicomCEchoRequest request) {
 				return new DicomCEchoResponse(request, DicomStatus.Success);
 			}
-		}
+
+            public void OnConnectionClosed(Exception exception)
+            {
+                throw new NotImplementedException();
+            }
+        }
 	}
 }

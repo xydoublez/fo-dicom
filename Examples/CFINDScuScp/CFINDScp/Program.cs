@@ -21,7 +21,7 @@ namespace CFINDScp
     //另外还需要实现IDicomCFindProvider接口,用于实现具体的C-FIND SCP服务。
     class ZSCFindSCP : DicomService, IDicomServiceProvider, IDicomCFindProvider
     {
-        public ZSCFindSCP(Stream stream,Logger log):base(stream,log)
+        public ZSCFindSCP(INetworkStream stream, Encoding fallbackEncoding, Logger log) : base(stream, fallbackEncoding, log)
         {
 
         }
@@ -106,6 +106,11 @@ namespace CFINDScp
         {
         }
 
+        public void OnConnectionClosed(Exception exception)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region Transfer Syntaxes
@@ -161,7 +166,7 @@ namespace CFINDScp
                     }
                     return queries;
                 };
-            var cfindServer = new DicomServer<ZSCFindSCP>(12345);
+            var cfindServer = DicomServer.Create<ZSCFindSCP>(12345);
             //控制台程序，用于确保主程序不退出才可一直提供DICOM C-FIND 服务
             Console.ReadLine();
         }

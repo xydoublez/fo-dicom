@@ -28,8 +28,8 @@ namespace ZYCMOVEScp
         string cmove_store_port = System.Configuration.ConfigurationManager.AppSettings["cmove_store_port"].ToString();
         //不发送图像的modality
         string not_send_modalitys = System.Configuration.ConfigurationManager.AppSettings["not_send_modalitys"]==null ? "" : System.Configuration.ConfigurationManager.AppSettings["not_send_modalitys"].ToString();
-        public ZSCMoveSCP(Stream stream, Logger log)
-            : base(stream, log)
+             
+        public ZSCMoveSCP(INetworkStream stream, Encoding fallbackEncoding, Logger log):base(stream,fallbackEncoding,log)
         {
 
         }
@@ -161,6 +161,11 @@ namespace ZYCMOVEScp
         public DicomCEchoResponse OnCEchoRequest(DicomCEchoRequest request)
         {
             return new DicomCEchoResponse(request, DicomStatus.Success);
+        }
+
+        public void OnConnectionClosed(Exception exception)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

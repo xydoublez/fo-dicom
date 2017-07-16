@@ -7,9 +7,8 @@ using Dicom.Log;
 using System.IO;
 using System.Data;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using System.Text;
-using System.Collections.Concurrent;
+using System.Windows.Forms;
 
 namespace ZYCGETScp
 {
@@ -100,7 +99,8 @@ namespace ZYCGETScp
                     };
         public CGetScp(INetworkStream stream, Encoding fallbackEncoding, Logger log) : base(stream, fallbackEncoding, log)
         {
-            this.Options.IgnoreAsyncOps = true;
+            
+            
         }
 
         public DicomCEchoResponse OnCEchoRequest(DicomCEchoRequest request)
