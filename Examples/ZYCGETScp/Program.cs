@@ -7,8 +7,8 @@ using Dicom.Log;
 using System.IO;
 using System.Data;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
+using System.Text;
 
 namespace ZYCGETScp
 {
@@ -23,6 +23,7 @@ namespace ZYCGETScp
         public extern static int MsunVerify(string info, string priKeyFile, string pubKeyFile);
         static void Main(string[] args)
         {
+#if RELEASE
             if (!File.Exists("License.txt"))
             {
                 MessageBox.Show("本系统未经过山东众阳软件产品正版认证，请告之相关负责人联系我公司进行产品的认证工作。谢谢!");
@@ -32,19 +33,20 @@ namespace ZYCGETScp
             var result = MsunVerify(info, "pri", "pub");
             if (result == 0)
             {
-               // MessageBox.Show("验证成功");
+                // MessageBox.Show("验证成功");
             }
             else
             {
                 MessageBox.Show("本系统未经过山东众阳软件产品正版认证，请告之相关负责人联系我公司进行产品的认证工作。谢谢!");
                 return;
             }
-
-            int port = Convert.ToInt16(System.Configuration.ConfigurationManager.AppSettings["port"]);
+#endif
             LogManager.SetImplementation(ConsoleLogManager.Instance);
+            int port = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["port"]);
             var cmoveScp = DicomServer.Create<CGetScp>(port);
-            Console.WriteLine("众阳PACS DICOM C-GET 服务成功运行,监听端口为"+port.ToString()+"。。。。。。。。");
+            Console.WriteLine("服务成功运行,在"+port.ToString()+"端口.......");
             Console.ReadLine();
+
         }
 
     }
@@ -99,41 +101,28 @@ namespace ZYCGETScp
                     };
         public CGetScp(INetworkStream stream, Encoding fallbackEncoding, Logger log) : base(stream, fallbackEncoding, log)
         {
-            
-            
+
+            //this.Options = new DicomServiceOptions { IgnoreAsyncOps = true };
         }
 
         public DicomCEchoResponse OnCEchoRequest(DicomCEchoRequest request)
         {
             return new DicomCEchoResponse(request, DicomStatus.Success);
         }
+
         public IEnumerable<DicomCGetResponse> OnCGetRequest(DicomCGetRequest request)
         {
-          
             IList<DicomCGetResponse> rsp = new List<DicomCGetResponse>();
             try
             {
-                DataSet ds = null ;
-                var uid = request.Dataset.Get<string>(DicomTag.SOPInstanceUID);
-                var studyUid = request.Dataset.Get<string>(DicomTag.StudyInstanceUID);
-                if (uid != null)
-                {
-                    ds = DataBase.GetImageByUid(uid);
-                }
-                if (studyUid != null)
-                {
-                    ds = DataBase.GetImage(studyUid);
-                }
+                DataSet ds = DataBase.GetImage(request.Dataset.Get<string>(DicomTag.StudyInstanceUID));
                 if (ds != null && ds.Tables[0].Rows.Count > 0)
                 {
                     int len = ds.Tables[0].Rows.Count;
-                    //Association.MaxAsyncOpsInvoked = len;
-                    //Association.MaxAsyncOpsPerformed = len;
                     int cnt = 0;
                     foreach (DataRow r in ds.Tables[0].Rows)
                     {
-                        
-                        DicomCStoreRequest cstorerq = new DicomCStoreRequest(r[0].ToString());
+                        DicomCStoreRequest cstorerq = new DicomCStoreRequest(r["REFERENCEFILE"].ToString());
                         cstorerq.OnResponseReceived = (rq, rs) =>
                         {
                             if (rs.Status != DicomStatus.Pending)
@@ -142,38 +131,26 @@ namespace ZYCGETScp
                             }
                             if (rs.Status == DicomStatus.Success)
                             {
-
                                 DicomCGetResponse rsponse = new DicomCGetResponse(request, DicomStatus.Pending);
                                 rsponse.Remaining = --len;
                                 rsponse.Completed = ++cnt;
                                 rsponse.Warnings = 0;
                                 rsponse.Failures = 0;
-                                
-                                if (len == 0)
-                                {
-                                    rsponse.Status = DicomStatus.Success;
-
-
-                                }
-                                SendResponse(rsponse);
+                                rsp.Add(rsponse);
+                             
 
                             }
 
                         };
-                        SendRequest(cstorerq);
-                        
-                      
+                        this.SendRequest(cstorerq);
+
+
+
                     }
 
-                  
+                }
 
-                }
-                else
-                {
-                    rsp.Add(new DicomCGetResponse(request, DicomStatus.QueryRetrieveOutOfResources));
-                    return rsp;
-                }
-                rsp.Add(new DicomCGetResponse(request, DicomStatus.Pending));
+                rsp.Add(new DicomCGetResponse(request, DicomStatus.Success));
                 return rsp;
             }
             catch(Exception ex)
@@ -186,12 +163,12 @@ namespace ZYCGETScp
 
         public void OnConnectionClosed(Exception exception)
         {
-            
+            throw new NotImplementedException();
         }
 
         public void OnReceiveAbort(DicomAbortSource source, DicomAbortReason reason)
         {
-            
+            throw new NotImplementedException();
         }
 
         public void OnReceiveAssociationReleaseRequest()
@@ -219,7 +196,6 @@ namespace ZYCGETScp
                         if (pc.AbstractSyntax.StorageCategory != DicomStorageCategory.None)
                     pc.AcceptTransferSyntaxes(AcceptedImageTransferSyntaxes);
             }
-            
             SendAssociationAccept(association);
         }
     }

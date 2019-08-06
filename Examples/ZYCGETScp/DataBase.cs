@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -139,15 +140,23 @@ namespace ZYCGETScp
         public static  DataSet GetImage(string studySopinstanceUid)
         {
             DataSet ds = new DataSet();
-            string sql = "SELECT REFERENCE_FILE FROM ZYPACSDB.DBO.VIEW_PATIENT_IMAGES WHERE STUDY_INSTANCE_UID=@studySopinstanceUid";
+            string sql = @"  SELECT  A.PATIENT_ID  patientId, A.STUDY_IDENTITY  studyIdentity,A.STUDY_ID studyId, B.SERIES_IDENTITY  seriesIdentity, A.STUDY_INSTANCE_UID  studyInstanceUid, B.SERIES_INSTANCE_UID  seriesInstanceUid, C.SOPINSTANCE_UID  sopinstanceUid,
+                            C.REFERENCE_FILE
+                            referenceFile, A.MODALITY  modality,B.SERIES_NUMBER seriesNumber,C.INSTANCE_NUMBER instanceNumber,C.IMAGE_IDENTITY imageIdentity,A.STUDY_DATE studyDate,A.STUDY_TIME studyTime,A.FLAG_ARCHIVE flagArchive,B.IMAGE_VISIT_LEVEL imageVisitLevel,A.HOSPITAL_ID hospitalId,
+                            C.FILEM_PRINTED  filemPrinted,B.SERIES_DESCRIPTION seriesDescription
+                            FROM         PACS_CONSULTATION_STUDY A  INNER JOIN PACS_CONSULTATION_SERIES B  ON A.STUDY_IDENTITY = B.STUDY_IDENTITY
+                            INNER JOIN PACS_CONSULTATION_IMAGE C  ON B.SERIES_IDENTITY = C.SERIES_IDENTITY
+                            WHERE  A.STUDY_INSTANCE_UID=:studyInstanceUid order by A.STUDY_IDENTITY,B.SERIES_NUMBER,B.SERIES_INSTANCE_UID,C.INSTANCE_NUMBER";
 
-            using (SqlConnection conn = new SqlConnection(constr))
+
+
+            using (OracleConnection conn = new OracleConnection(constr))
             {
                 conn.Open();
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                using (OracleCommand cmd = new OracleCommand(sql, conn))
                 {
-                    cmd.Parameters.Add(new SqlParameter("studySopinstanceUid", studySopinstanceUid));
-                    using (SqlDataAdapter adp = new SqlDataAdapter(cmd))
+                    cmd.Parameters.Add(new OracleParameter("studySopinstanceUid", studySopinstanceUid));
+                    using (OracleDataAdapter adp = new OracleDataAdapter(cmd))
                     {
                         adp.Fill(ds, "ds");
                     }
@@ -155,26 +164,6 @@ namespace ZYCGETScp
             }
             return ds;
          
-        }
-        public static DataSet GetImageByUid(string SopinstanceUid)
-        {
-            DataSet ds = new DataSet();
-            string sql = "SELECT REFERENCE_FILE FROM ZYPACSDB.DBO.VIEW_PATIENT_IMAGES WHERE SOPINSTANCE_UID=@SOPINSTANCE_UID";
-
-            using (SqlConnection conn = new SqlConnection(constr))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.Add(new SqlParameter("SOPINSTANCE_UID", SopinstanceUid));
-                    using (SqlDataAdapter adp = new SqlDataAdapter(cmd))
-                    {
-                        adp.Fill(ds, "ds");
-                    }
-                }
-            }
-            return ds;
-
         }
     }
     public class Log
